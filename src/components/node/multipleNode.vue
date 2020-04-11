@@ -1,12 +1,16 @@
 <template>
-  <div class="node-content">
-    <div :id="item.id" class="branch-jump" v-for="(item,index) in node.nodeData.branchJump">
+  <div class="node-content"
+       v-if="node.nodeData.slot">
+    <div :id="item.id"
+         class="branch-jump"
+         v-for="(item,index) in node.nodeData.branchJump">
       <span class="blue">{{node.nodeData.slot}}</span>
       <span class="gray">{{item.ruleEnumCode | setRuleEnumCode}}</span>
       <span class="blue"> {{item.content}}</span>
       <span class="visual-endpoint-dom"></span>
     </div>
-     <div class="slot" :id="node.nodeData.defaultJump.id">
+    <div class="slot"
+         :id="node.nodeData.defaultJump.id">
       <span class="gray">收集到 </span>
       <span class="blue">{{node.nodeData.slot}}</span>
       <span class="gray"> 时</span>
@@ -30,5 +34,5 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../scss/node"
+@import "../../scss/node";
 </style>

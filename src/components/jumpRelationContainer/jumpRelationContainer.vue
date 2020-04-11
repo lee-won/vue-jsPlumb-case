@@ -166,23 +166,7 @@ export default {
     }
   },
   watch: {
-    // node: {
-    //   handler(val) {
-    //     this.$nextTick(() => {
-    //       this.defaultJump = this.node.relationVos.empty ? this.node.relationVos.empty.nextId : ''
-    //       if (!this.node.relationVos.empty) this.node.relationVos.empty = { nextId: '' }
 
-    //       if (this.node.relationVos.skipRule.length) {
-    //         console.log(this.getEntityIdToNameList)
-    //         this.node.relationVos.skipRule.forEach(item => {
-    //           item.nextRule.entityName = this.getEntityIdToNameList.get(item.nextRule.entityId)
-    //         })
-    //       }
-    //     })
-    //   },
-    //   deep: true,
-    //   immediate: true
-    // }
   },
   computed: {
     ...mapGetters(['getNodeList']),

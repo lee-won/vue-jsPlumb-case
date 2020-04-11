@@ -1,36 +1,39 @@
 <template>
-  <div class="home" v-if="easyFlowVisible">
+  <div class="home"
+       v-if="easyFlowVisible">
     <div class="header">
-      <el-button size="meduim" type="primary" @click="loadFlow">加载流程</el-button>
-      <el-button size="meduim" type="primary" @click="saveFlow">保存流程</el-button>
+      <el-button size="meduim"
+                 type="primary"
+                 @click="loadFlow">加载流程</el-button>
+      <el-button size="meduim"
+                 type="primary"
+                 @click="saveFlow">保存流程</el-button>
     </div>
     <div class="content">
-  <div class="navMenu" ref="navMenu">
-      <flow-tool @addNode="addNode"></flow-tool>
-    </div>
-    <div class="flow-content">
-      <div id="flowContianer" class="container">
-        <template v-for=" node in data.nodeList">
-          <flow-node
-            v-if="node.show"
-            :key="node.id"
-            :node="node"
-            :active="activeData && (activeData.id === node.id)"
-            @deleteNode="deleteNode"
-            @changeNodeSite="changeNodeSite"
-            @editNode="editNode"
-          ></flow-node>
-        </template>
+      <div class="navMenu"
+           ref="navMenu">
+        <flow-tool @addNode="addNode"></flow-tool>
+      </div>
+      <div class="flow-content">
+        <div id="flowContianer"
+             class="container">
+          <template v-for=" node in data.nodeList">
+            <flow-node v-if="node.show"
+                       :key="node.id"
+                       :node="node"
+                       :active="activeData && (activeData.id === node.id)"
+                       @deleteNode="deleteNode"
+                       @changeNodeSite="changeNodeSite"
+                       @editNode="editNode"></flow-node>
+          </template>
+        </div>
       </div>
     </div>
-    </div>
-    <node-form
-      v-if="nodeFormVisible"
-      ref="nodeForm"
-      :nodeData="activeData"
-      :nodelist = data.nodeList
-      @saveUnitData="saveUnitData"
-    ></node-form>
+    <node-form v-if="nodeFormVisible"
+               ref="nodeForm"
+               :nodeData="activeData"
+               :nodelist=data.nodeList
+               @saveUnitData="saveUnitData"></node-form>
   </div>
 </template>
 
@@ -234,6 +237,11 @@ export default {
       _this.jsPlumb.bind('connectionDetached', function (evt) {
         _this.deleteLine(evt.sourceId, evt.targetId)
       })
+
+      // 监听线被连接时不允许自己与自己相连
+      _this.jsPlumb.bind('beforeDrop', function (conn) {
+        return !conn.sourceId.includes(conn.targetId)
+      })
     },
 
     // 删除线的数据
@@ -382,11 +390,13 @@ export default {
         return data.id === item.id
       })
       this.data.nodeList[nodeIndex] = data
+      // 判断默认跳转关系是否有指向其它节点
       if (data.nodeData.defaultJump.nextId) {
         this.addLine({ from: data.nodeData.defaultJump.id, to: data.nodeData.defaultJump.nextId })
       }
       if (data.nodeData.branchJump.length) {
         data.nodeData.branchJump.forEach((item) => {
+          // 判断分支跳转关系是否有指向其它节点
           if (item.nextId) {
             this.addLine({ from: item.id, to: item.nextId })
           }
@@ -417,14 +427,13 @@ export default {
     },
     // 新增连线关系并去重复的线
     addLine (line) {
-      const findIndex = this.data.lineList.findIndex((item) => {
-        return (item.from === line.from) && (item.to === line.to)
+      // 先删除该线的源点已连接的线,然后再生成新的线
+      this.data.lineList = this.data.lineList.filter((item) => {
+        return item.from !== line.from
       })
-      if (findIndex === -1) {
-        this.data.lineList.push(line)
-      }
+      this.data.lineList.push(line)
     },
-    // 监听线的操作,删除或连接时改变单元数据 type值 connect: '连接时'， del: '删除时'
+    // 监听线的操作,删除或连接时改变单元数据   type值 connect: '连接时'， del: '删除时'
     listenLineHandle (from, to, type) {
       const sourceNode = this.data.nodeList.find((item) => {
         console.log(from.split('_')[0])
@@ -487,47 +496,47 @@ export default {
 <style lang="scss" scoped>
 .home {
   .header {
-    position:relative;
-    width:100%;
-    background:#fff;
+    position: relative;
+    width: 100%;
+    background: #fff;
     box-shadow: 2px 2px 2px 2px #eee;
     text-align: right;
     padding: 0 20px;
     box-sizing: border-box;
     height: 80px;
     line-height: 80px;
-    z-index:2;
+    z-index: 2;
   }
-  .content{
-   position: relative;
-   height:calc(100vh - 80px);
-   .navMenu{
-    position:absolute;
-    top:0;
-    bottom:0;
-    left:0;
-    width:230px;
-    box-sizing:border-box;
-    overflow-y: auto;
-   }
-   .flow-content{
-     position:absolute;
-     top:0;
-     bottom:0;
-     left:230px;
-     right:0;
-     height: inherit;
-     overflow: auto;
-     box-sizing: border-box;
-     .container{
-       height: inherit;
-       width:inherit;
-       background: url(../assets/grid-background.png);
-       background-size: 50px 50px;
-       box-sizing: border-box;
-       position: relative;
-     }
-   }
+  .content {
+    position: relative;
+    height: calc(100vh - 80px);
+    .navMenu {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 230px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+    .flow-content {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 230px;
+      right: 0;
+      height: inherit;
+      overflow: auto;
+      box-sizing: border-box;
+      .container {
+        height: inherit;
+        width: inherit;
+        background: url(../assets/grid-background.png);
+        background-size: 50px 50px;
+        box-sizing: border-box;
+        position: relative;
+      }
+    }
   }
 }
 </style>

@@ -1,17 +1,6 @@
 <template>
   <div class="node-content">
-    <div :id="item.id" class="branch-jump" v-for="(item,index) in node.nodeData.branchJump">
-      <span class="blue">{{node.nodeData.slot}}</span>
-      <span class="gray">{{item.ruleEnumCode | setRuleEnumCode}}</span>
-      <span class="blue"> {{item.content}}</span>
-      <span class="visual-endpoint-dom"></span>
-    </div>
-     <div class="slot" :id="node.nodeData.defaultJump.id">
-      <span class="gray">收集到 </span>
-      <span class="blue">{{node.nodeData.slot}}</span>
-      <span class="gray"> 时</span>
-      <span class="visual-endpoint-dom"></span>
-    </div>
+    跳转到下个意图
   </div>
 </template>
 <script>
@@ -30,5 +19,8 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../scss/node"
+.node-content {
+  font-size: 12px;
+  font-weight: 700;
+}
 </style>
