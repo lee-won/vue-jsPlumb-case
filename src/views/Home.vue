@@ -17,7 +17,7 @@
       <div class="flow-content">
         <div id="flowContianer"
              class="container">
-          <template v-for=" node in data.nodeList">
+          <template v-for=" (node,index) in data.nodeList">
             <flow-node v-if="node.show"
                        :key="node.id"
                        :node="node"
@@ -69,20 +69,6 @@ const sourceOption = {
 // 默认设置参数
 const jsplumbSetting = {
   // 动态锚点、位置自适应
-  Anchors: [
-    'Top',
-    'TopCenter',
-    'TopRight',
-    'TopLeft',
-    'Right',
-    'RightMiddle',
-    'Bottom',
-    'BottomCenter',
-    'BottomRight',
-    'BottomLeft',
-    'Left',
-    'LeftMiddle'
-  ],
   Container: 'flowContianer',
   // 连线的样式 StateMachine、Flowchart
   // Connector: 'Flowchart',
@@ -116,7 +102,6 @@ export default {
       easyFlowVisible: true,
       flowInfoVisible: false,
       nodeFormVisible: false,
-      index: 1,
       loadEasyFlowFinish: false,
       // 数据
       data: {
@@ -194,7 +179,7 @@ export default {
         // 会使整个jsPlumb立即重绘。
         _this.jsPlumb.setSuspendDrawing(false, true)
       })
-      // // 初始化流程图
+      // 初始化流程图
       this.initFlow()
       // 监听生成连线时
       _this.jsPlumb.bind('connection', function (evt) {
@@ -286,6 +271,7 @@ export default {
         })
       })
       console.log(this.jsPlumb)
+      this.jsPlumb.repaintEverything()
     },
 
     // 添加新的节点
@@ -411,10 +397,10 @@ export default {
         })
       })
     },
-    // 创建单元起始点
+    // 创建单元源点
     createSourcePoint (data) {
       if (data.type === 'triggerNode') {
-        this.jsPlumb.addEndpoint(data.nodeData.defaultJump.id, { ...sourceOption, offsetX: [-5, 0] })
+        this.jsPlumb.addEndpoint(data.nodeData.defaultJump.id, sourceOption)
       }
       if (data.nodeData.defaultJump.id && data.nodeData.slot) {
         this.jsPlumb.addEndpoint(data.nodeData.defaultJump.id, sourceOption)
@@ -461,7 +447,6 @@ export default {
         lineList: this.data.lineList
       }
       window.localStorage.setItem('flowData', JSON.stringify(flowData))
-      window.localStorage.setItem('nodeIndex', this.index)
       this.$message({
         message: '流程图已保存',
         type: 'success'
@@ -479,7 +464,6 @@ export default {
       this.data.nodeList = []
       this.data.lineList = []
       this.$nextTick(_ => {
-        this.index = window.localStorage.getItem('nodeIndex')
         // 这里模拟后台获取数据、然后加载
         let data = window.localStorage.getItem('flowData')
         this.easyFlowVisible = true
@@ -528,9 +512,13 @@ export default {
       height: inherit;
       overflow: auto;
       box-sizing: border-box;
+      & /deep/ .jtk-endpoint {
+        z-index: 10 !important;
+      }
       .container {
-        height: inherit;
-        width: inherit;
+        width: 2000px;
+        height: 1000px;
+        overflow: hidden;
         background: url(../assets/grid-background.png);
         background-size: 50px 50px;
         box-sizing: border-box;
@@ -538,5 +526,6 @@ export default {
       }
     }
   }
+
 }
 </style>

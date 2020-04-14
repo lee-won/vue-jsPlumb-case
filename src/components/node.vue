@@ -2,9 +2,10 @@
   <div ref="node"
        :id="node.id"
        :style="flowNodeContainer"
+       :class="['node',active ? 'active' : '']"
        @mousedown="setActiveData"
        @mouseup="changeNodeSite">
-    <section :class="['visual-block', active ? 'active' : '', node.type==='triggerNode' ? 'trigger' : '']">
+    <section :class="['visual-block', node.type==='triggerNode' ? 'trigger' : '']">
       <div class="header"
            v-if="node.type !== 'triggerNode'">
         <div class="header-left">
@@ -69,10 +70,9 @@ export default {
     flowNodeContainer: {
       get () {
         return {
-          position: 'absolute',
+          // position: 'absolute',
           top: this.node.top,
-          left: this.node.left,
-          zIndex: 1
+          left: this.node.left
         }
       }
     }
@@ -80,7 +80,6 @@ export default {
   methods: {
     setActiveData () {
       this.$parent.activeData = this.node
-      this.$refs.node.style.zIndex = 2
     },
     // 删除节点
     deleteNode () {
@@ -93,7 +92,6 @@ export default {
     },
     // 鼠标移动后抬起
     changeNodeSite () {
-      this.$refs.node.style.zIndex = 1
       // 避免抖动
       if (this.node.left === this.$refs.node.style.left && this.node.top === this.$refs.node.style.top) {
         return
@@ -109,6 +107,25 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.node {
+  position: absolute;
+  z-index: 1;
+  &.active {
+    z-index: 2;
+    .visual-block {
+      border-width: 2px;
+      border-style: solid !important;
+      border-color: rgb(31, 119, 243);
+    }
+  }
+  &:hover {
+    .visual-block {
+      border-width: 2px;
+      border-style: dashed;
+      border-color: rgb(31, 119, 243);
+    }
+  }
+}
 .visual-block {
   position: relative;
   width: 256px;
@@ -187,7 +204,7 @@ export default {
     border-radius: 8px;
     background: rgb(142, 156, 168);
     box-sizing: border-box;
-    z-index: 1;
+    z-index:1;
   }
 }
 </style>
