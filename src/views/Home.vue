@@ -17,9 +17,8 @@
       <div class="flow-content">
         <div id="flowContianer"
              class="container">
-          <template v-for=" (node,index) in data.nodeList">
-            <flow-node v-if="node.show"
-                       :key="node.id"
+          <template v-for=" (node) in data.nodeList">
+            <flow-node :key="node.id"
                        :node="node"
                        :active="activeData && (activeData.id === node.id)"
                        @deleteNode="deleteNode"
@@ -63,8 +62,7 @@ const triggerNode = {
 }
 const sourceOption = {
   anchors: ['Right'],
-  isSource: true,
-  zIndex: 333
+  isSource: true
 }
 // 默认设置参数
 const jsplumbSetting = {
@@ -176,11 +174,11 @@ export default {
             ]
           ]
         })
-        // 会使整个jsPlumb立即重绘。
-        _this.jsPlumb.setSuspendDrawing(false, true)
       })
       // 初始化流程图
-      this.initFlow()
+      _this.initFlow()
+      // 会使整个jsPlumb立即重绘。
+      _this.jsPlumb.setSuspendDrawing(false, true)
       // 监听生成连线时
       _this.jsPlumb.bind('connection', function (evt) {
         let from = evt.source.id
@@ -347,14 +345,19 @@ export default {
         closeOnClickModal: false
       })
         .then(() => {
-          this.data.nodeList.forEach(function (node) {
-            if (node.id === data.id) {
-              node.show = false
-            }
-            // return node.id !== data.id
-          })
+          // this.data.nodeList.forEach(function (node) {
+          //   if (node.id === data.id) {
+          //     node.show = false
+          //   }
+          //   // return node.id !== data.id
+          // })
           this.jsPlumb.remove(data.id)
           this.jsPlumb.repaintEverything()
+          this.data.nodeList = this.data.nodeList.filter(item => {
+            console.log(item)
+            return item.id !== data.id
+          })
+          console.log(this.data.nodeList)
         })
         .catch((e) => {
           console.log(e)
@@ -440,13 +443,7 @@ export default {
     },
     // 保存流程
     saveFlow () {
-      const flowData = {
-        nodeList: this.data.nodeList.filter((item) => {
-          return item.show
-        }),
-        lineList: this.data.lineList
-      }
-      window.localStorage.setItem('flowData', JSON.stringify(flowData))
+      window.localStorage.setItem('flowData', JSON.stringify(this.data))
       this.$message({
         message: '流程图已保存',
         type: 'success'

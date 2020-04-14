@@ -4,13 +4,13 @@
                :key="index"
                @end="addNode"
                @choose="move(index)"
-               :options="draggableOptions">
+               v-bind="draggableOptions">
       <div class="item">
         <img :src="item.icon">
         <span>{{item.name}}</span>
       </div>
     </draggable>
-</div>    
+</div>
 </template>
 <script>
 import draggable from 'vuedraggable'
@@ -88,7 +88,7 @@ export default {
     // 是否是火狐浏览器
     isFirefox () {
       var userAgent = navigator.userAgent
-      if (userAgent.indexOf('Firefox') > -1) {   
+      if (userAgent.indexOf('Firefox') > -1) {
         return true
       }
       return false

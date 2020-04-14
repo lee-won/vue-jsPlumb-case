@@ -25,9 +25,9 @@
       </div>
 
       <span class="block-endpoint-dom"
-            v-if="node.type !== 'triggerNode'"></span>
+            v-show="node.type !== 'triggerNode'"></span>
       <div class="no-msg"
-           v-if="!node.nodeData.slot &&  !['triggerNode', 'destinationNode'].includes(node.type)">
+           v-show="!node.nodeData.slot &&  !['triggerNode', 'destinationNode'].includes(node.type)">
         <span>暂无对话消息，点击单元添加</span>
         <img class="no-msg-bg"
              src="../assets/block-preview.png" />
