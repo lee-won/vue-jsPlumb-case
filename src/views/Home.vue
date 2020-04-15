@@ -39,11 +39,10 @@
 <script>
 import { jsPlumb } from 'jsplumb'
 import { util } from '@/utils/util'
-// import $ from 'jquery'
+import { mapActions, mapGetters } from 'vuex'
 import flowNode from '../components/node'
 import flowTool from '../components/tool'
 import nodeForm from '../components/node_form'
-import { mapActions } from 'vuex'
 const triggerId = util.getRandomId()
 const triggerNode = {
   id: triggerId,
@@ -129,8 +128,11 @@ export default {
       deep: true
     }
   },
+  computed: {
+    ...mapGetters(['getScrollPosition'])
+  },
   methods: {
-    ...mapActions(['listenNodeListChange']),
+    ...mapActions(['listenNodeListChange', 'listenScrollPosition']),
     setActiveData (data) {
       console.log(data)
       this.activeData = data
@@ -281,10 +283,11 @@ export default {
       var top = mousePosition.top
       if (mousePosition.left < 0) {
         console.log(evt.originalEvent.layerX, evt.originalEvent.clientY)
-        left = evt.originalEvent.layerX - width
+        left = document.getElementsByClassName('flow-content')[0].scrollLeft + evt.originalEvent.layerX - width
       }
       if (mousePosition.top < 0) {
-        top = evt.originalEvent.clientY - 50
+        top = document.getElementsByClassName('flow-content')[0].scrollTop + evt.originalEvent.clientY - 100
+        console.log(left)
       }
       let node = {
         id: id,
@@ -367,7 +370,11 @@ export default {
     // 编辑节点
     editNode () {
       this.nodeFormVisible = true
+
       this.$nextTick(() => {
+        // 保存滚动条位置
+        const flowWindow = document.getElementsByClassName('flow-content')[0]
+        this.listenScrollPosition({ top: flowWindow.scrollTop, left: flowWindow.scrollLeft })
         this.$refs.nodeForm.init(this.activeData, true)
       })
     },
@@ -397,6 +404,9 @@ export default {
         this.jsPlumb = jsPlumb.getInstance()
         this.$nextTick(() => {
           this.jsPlumbInit()
+          // 设置滚动条位置
+          const flowWindow = document.getElementsByClassName('flow-content')[0]
+          flowWindow.scrollTo(this.getScrollPosition)
         })
       })
     },

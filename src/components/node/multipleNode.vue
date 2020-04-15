@@ -2,7 +2,7 @@
   <div class="node-content"
        v-if="node.nodeData.slot">
     <div :id="item.id"
-    :key="item.id"
+         :key="item.id"
          class="branch-jump"
          v-for="(item) in node.nodeData.branchJump">
       <span class="blue">{{node.nodeData.slot}}</span>
