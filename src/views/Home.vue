@@ -14,9 +14,16 @@
            ref="navMenu">
         <flow-tool @addNode="addNode"></flow-tool>
       </div>
-      <div class="flow-content">
+      <div class="flow-content"
+           @scroll="scroll">
         <div id="flowContianer"
              class="container">
+          <!-- 画布拓展按钮 -->
+          <span class="btn down"
+                @click="extendFlowSize('height')"><i class="el-icon-arrow-down"></i></span>
+          <span class="btn right"
+                @click="extendFlowSize('width')"><i class="el-icon-arrow-right"></i></span>
+          <!-- end -->
           <template v-for=" (node) in data.nodeList">
             <flow-node :key="node.id"
                        :node="node"
@@ -26,6 +33,7 @@
                        @editNode="editNode"></flow-node>
           </template>
         </div>
+
       </div>
     </div>
     <node-form v-if="nodeFormVisible"
@@ -93,7 +101,7 @@ const jsplumbSetting = {
   RenderMode: 'svg'
 }
 export default {
-  data () {
+  data() {
     return {
       jsPlumb: null, // jsPlumb 实例
       easyFlowVisible: true,
@@ -105,7 +113,11 @@ export default {
         nodeList: [triggerNode],
         lineList: []
       },
-      activeData: null
+      activeData: null,
+      flowSize: {
+        height: 0,
+        width: 0
+      }
     }
   },
   components: {
@@ -113,7 +125,8 @@ export default {
     flowTool,
     nodeForm
   },
-  mounted () {
+  mounted() {
+    this.initFlowSize()
     this.jsPlumb = jsPlumb.getInstance()
     this.$nextTick(() => {
       this.jsPlumbInit()
@@ -122,7 +135,7 @@ export default {
   },
   watch: {
     'data.nodeList': {
-      handler (val) {
+      handler(val) {
         this.listenNodeListChange(this.data.nodeList)
       },
       deep: true
@@ -133,12 +146,45 @@ export default {
   },
   methods: {
     ...mapActions(['listenNodeListChange', 'listenScrollPosition']),
-    setActiveData (data) {
-      console.log(data)
-      this.activeData = data
-      console.log(this.activeData)
+    // 初始化画布尺寸
+    initFlowSize() {
+      const width = $(window).width() - $('.navMenu').width()
+      const height = $(window).height() - $('.header').height()
+      $('#flowContianer').width(width).height(height)
+      this.flowSize.width = width
+      this.flowSize.height = height
     },
-    jsPlumbInit () {
+    // 画布滚动条滚动时
+    scroll() {
+      console.log($('.flow-content').scrollTop(), $('.flow-content').height(), $('#flowContianer').height())
+      if ($('.flow-content').scrollTop() + $('.flow-content').height() > $('#flowContianer').height()) {
+        $('.down').css({ display: ' block', left: $('.flow-content').width() / 2 + $('.flow-content').scrollLeft() })
+      } else {
+        $('.down').css({ display: ' none' })
+      }
+      if ($('.flow-content').scrollLeft() + $('.flow-content').width() > $('#flowContianer').width()) {
+        $('.right').css({ display: ' block', top: $('.flow-content').height() / 2 + $('.flow-content').scrollTop() })
+      } else {
+        $('.right').css({ display: ' none' })
+      }
+    },
+    //扩展画布
+    extendFlowSize(type) {
+      if (type === 'height') {
+        const height = $('#flowContianer').height() + 500
+        $('#flowContianer').height(height)
+        this.flowSize.height = height
+      }
+      if (type === 'width') {
+        const width = $('#flowContianer').width() + 500
+        $('#flowContianer').width(width)
+        this.flowSize.width = width
+      }
+    },
+    setActiveData(data) {
+      this.activeData = data
+    },
+    jsPlumbInit() {
       const _this = this
       this.jsPlumb.ready(function () {
         // 导入默认配置
@@ -230,7 +276,7 @@ export default {
     },
 
     // 删除线的数据
-    deleteLine (from, to) {
+    deleteLine(from, to) {
       console.log(this.data.lineList)
       this.data.lineList = this.data.lineList.filter(function (line) {
         return line.from !== from || line.to !== to
@@ -240,7 +286,7 @@ export default {
     },
 
     // 解析加载的数据
-    initFlow () {
+    initFlow() {
       if (this.data.nodeList.length > 0) {
         this.data.nodeList.forEach((item, index) => {
           // 触发器只有源点，其它单元都有终点
@@ -275,7 +321,7 @@ export default {
     },
 
     // 添加新的节点
-    addNode (evt, type, mousePosition) {
+    addNode(evt, type, mousePosition) {
       console.log('添加节点', evt, type, mousePosition)
       let width = this.$refs.navMenu.offsetWidth
       let id = util.getRandomId()
@@ -283,10 +329,11 @@ export default {
       var top = mousePosition.top
       if (mousePosition.left < 0) {
         console.log(evt.originalEvent.layerX, evt.originalEvent.clientY)
-        left = document.getElementsByClassName('flow-content')[0].scrollLeft + evt.originalEvent.layerX - width
+        console.log($('.flow-content').scrollLeft(), 'jquery')
+        left = $('.flow-content').scrollLeft() + evt.originalEvent.layerX - width
       }
       if (mousePosition.top < 0) {
-        top = document.getElementsByClassName('flow-content')[0].scrollTop + evt.originalEvent.clientY - 100
+        top = $('.flow-content').scrollTop() + evt.originalEvent.clientY - 100
         console.log(left)
       }
       let node = {
@@ -329,7 +376,7 @@ export default {
     //   this.menu.top = evt.y + 'px'
     // },
     // 改变节点的位置
-    changeNodeSite (data) {
+    changeNodeSite(data) {
       // console.log(data, '改变节点位置')
       for (var i = 0; i < this.data.nodeList.length; i++) {
         let node = this.data.nodeList[i]
@@ -339,7 +386,7 @@ export default {
         }
       }
     },
-    deleteNode (data) {
+    deleteNode(data) {
       console.log(this.jsPlumb)
       this.$confirm('确定要删除节点' + data.id + '?', '提示', {
         confirmButtonText: '确定',
@@ -368,18 +415,17 @@ export default {
       return true
     },
     // 编辑节点
-    editNode () {
+    editNode() {
       this.nodeFormVisible = true
 
       this.$nextTick(() => {
         // 保存滚动条位置
-        const flowWindow = document.getElementsByClassName('flow-content')[0]
-        this.listenScrollPosition({ top: flowWindow.scrollTop, left: flowWindow.scrollLeft })
+        this.listenScrollPosition({ top: $('.flow-content').scrollTop(), left: $('.flow-content').scrollLeft() })
         this.$refs.nodeForm.init(this.activeData, true)
       })
     },
     // 保存节点编辑的数据
-    saveUnitData (data) {
+    saveUnitData(data) {
       this.nodeFormVisible = false
       const nodeIndex = this.data.nodeList.findIndex(item => {
         console.log(item)
@@ -405,13 +451,15 @@ export default {
         this.$nextTick(() => {
           this.jsPlumbInit()
           // 设置滚动条位置
-          const flowWindow = document.getElementsByClassName('flow-content')[0]
-          flowWindow.scrollTo(this.getScrollPosition)
+          // const flowWindow = document.getElementsByClassName('flow-content')[0]
+          $('#flowContianer').width(this.flowSize.width).height(this.flowSize.height)
+          $('.flow-content').scrollTop(this.getScrollPosition.top)
+          $('.flow-content').scrollLeft(this.getScrollPosition.left)
         })
       })
     },
     // 创建单元源点
-    createSourcePoint (data) {
+    createSourcePoint(data) {
       if (data.type === 'triggerNode') {
         this.jsPlumb.addEndpoint(data.nodeData.defaultJump.id, sourceOption)
       }
@@ -425,7 +473,7 @@ export default {
       }
     },
     // 新增连线关系并去重复的线
-    addLine (line) {
+    addLine(line) {
       // 先删除该线的源点已连接的线,然后再生成新的线
       this.data.lineList = this.data.lineList.filter((item) => {
         return item.from !== line.from
@@ -433,7 +481,7 @@ export default {
       this.data.lineList.push(line)
     },
     // 监听线的操作,删除或连接时改变单元数据   type值 connect: '连接时'， del: '删除时'
-    listenLineHandle (from, to, type) {
+    listenLineHandle(from, to, type) {
       const sourceNode = this.data.nodeList.find((item) => {
         console.log(from.split('_')[0])
         return item.id === from.split('_')[0]
@@ -452,15 +500,16 @@ export default {
       }
     },
     // 保存流程
-    saveFlow () {
+    saveFlow() {
       window.localStorage.setItem('flowData', JSON.stringify(this.data))
+      window.localStorage.setItem('flowSize', JSON.stringify(this.flowSize))
       this.$message({
         message: '流程图已保存',
         type: 'success'
       })
     },
     // 加载流程图
-    loadFlow () {
+    loadFlow() {
       if (!window.localStorage.getItem('flowData')) {
         this.$message({
           message: '您暂未保存过流程图',
@@ -477,6 +526,15 @@ export default {
         this.data = JSON.parse(data)
         this.jsPlumb = jsPlumb.getInstance()
         this.$nextTick(() => {
+          // 加载画布尺寸
+          if (!window.localStorage.getItem('flowSize')) {
+            this.initFlowSize()
+          } else {
+            const { width, height } = JSON.parse(window.localStorage.getItem('flowSize'))
+            console.log(width, height, $('#flowContianer'))
+            $('#flowContianer').width(width).height(height)
+            this.flowSize = { width, height }
+          }
           this.jsPlumbInit()
         })
       })
@@ -516,23 +574,37 @@ export default {
       bottom: 0;
       left: 230px;
       right: 0;
-      height: inherit;
       overflow: auto;
       box-sizing: border-box;
       & /deep/ .jtk-endpoint {
         z-index: 10 !important;
       }
       .container {
-        width: 2000px;
-        height: 1000px;
         overflow: hidden;
         background: url(../assets/grid-background.png);
         background-size: 50px 50px;
         box-sizing: border-box;
         position: relative;
+        .btn {
+          position: absolute;
+          cursor: pointer;
+          &:hover {
+            color: #409eff;
+          }
+          z-index: 999;
+          &.down {
+            bottom: 10px;
+            left: 50%;
+            display: none;
+          }
+          &.right {
+            right: 10px;
+            top: 50%;
+            display: none;
+          }
+        }
       }
     }
   }
-
 }
 </style>

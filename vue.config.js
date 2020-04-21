@@ -1,6 +1,14 @@
+const webpack = require('webpack')
 module.exports = {
-    // 基本路径
-    publicPath: './',
-    baseUrl: './',
-    lintOnSave: false
+    lintOnSave: false,
+    configureWebpack: {
+        plugins: [
+            new webpack.ProvidePlugin({
+                $: 'jquery',
+                jQuery: 'jquery',
+                'windows.jQuery': 'jquery',
+                Popper: ['popper.js', 'default']
+            })
+        ]
+    }
 }
