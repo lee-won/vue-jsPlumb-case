@@ -41,6 +41,7 @@
                :nodeData="activeData"
                :nodelist=data.nodeList
                @saveUnitData="saveUnitData"></node-form>
+    <miniView></miniView>
   </div>
 </template>
 
@@ -51,6 +52,7 @@ import { mapActions, mapGetters } from 'vuex'
 import flowNode from '../components/node'
 import flowTool from '../components/tool'
 import nodeForm from '../components/node_form'
+import miniView from '../components/miniView/miniView'
 const triggerId = util.getRandomId()
 const triggerNode = {
   id: triggerId,
@@ -123,7 +125,8 @@ export default {
   components: {
     flowNode,
     flowTool,
-    nodeForm
+    nodeForm,
+    miniView
   },
   mounted() {
     this.initFlowSize()
@@ -168,7 +171,7 @@ export default {
         $('.right').css({ display: ' none' })
       }
     },
-    //扩展画布
+    // 扩展画布
     extendFlowSize(type) {
       if (type === 'height') {
         const height = $('#flowContianer').height() + 500
